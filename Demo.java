@@ -1,3 +1,6 @@
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+
 public class Demo {
 
     public static void main(String[] args) throws InterruptedException {
@@ -8,46 +11,60 @@ public class Demo {
         /*
             Service 1 is calling rate limiting function
          */
-        for (int i=0;i<10;i++){
+        System.out.println("------Service 1 is calling-------");
+        for (int i=1;i<=10;i++){
             boolean flag = rateLimit.callRateLimiting();
-            System.out.println(flag);
+            System.out.println("Request "+ i + " is "+flag);
         }
-        Thread.sleep(1000);
         /*
             Service 2 is calling rate limiting function
          */
-        for (int i=0;i<10;i++){
-            boolean flag = rateLimit.callRateLimiting();
-            System.out.println(flag);
-        }
         Thread.sleep(1000);
+        System.out.println("------Service 2 is calling-------");
+        for (int i=1;i<=10;i++){
+            boolean flag = rateLimit.callRateLimiting();
+            System.out.println("Request "+ i + " is "+flag);
+        }
         /*
             Service 3 is calling rate limiting function
          */
-        for (int i=0;i<10;i++){
+        Thread.sleep(5000);
+        System.out.println("------Service 3 is calling-------");
+        for (int i=1;i<=10;i++){
             boolean flag = rateLimit.callRateLimiting();
-            System.out.println(flag);
+            System.out.println("Request "+ i + " is "+flag);
         }
     }
 }
 
 class RateLimit{
 
-    int count = 0;
+    int count = 1;
+    long initialTime = System.currentTimeMillis();
+    final int maxRequests = 5;
+    final long timeFrame = 1000;
+
+//    public RateLimit() {
+//        this.initialTime = System.currentTimeMillis();
+//    }
+
     public Boolean callRateLimiting(){
 
-        boolean flag = false;
+        long startTime = System.currentTimeMillis();
+        if(startTime - initialTime > timeFrame){
+            initialTime = startTime;
+            count = 1;
+        }
 
-        if(count == 10) count = 0;
-        if(count < 5)
-        {
+        if(count <= maxRequests){
             count++;
-            flag = true;
+            return true;
         }
         else{
             count++;
-            flag = false;
+            return false;
         }
-        return flag;
     }
 }
+
+
